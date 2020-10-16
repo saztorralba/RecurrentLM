@@ -37,7 +37,9 @@ It will generate as many sentences as given by ``--num_sequences``, and will rep
 The code has been tested in the following environment, with the main following dependencies:
 
 python --> 3.8.3
+
 torch --> 1.4.0
+
 numpy --> 1.19.1
 
 ## Evaluation
@@ -50,24 +52,35 @@ A train and test subsets from Librispeech is provided, along with a selection of
 
 These are some results achieved on this train and test subsets using different recurrent layers, compared to 2-gram and 5-gram trained with SRILM.
 
-| 2-gram  | PPL: 252.49 |
-| 5-gram  | PPL: 191.60 |
-| RNN LM  | PPL: 159.43 |
-| GRU LM  | PPL: 133.42 |
-| LSTM LM | PPL: 132.19 |
+Method  | Perplexity
+--------|----------
+2-gram  | 252.49 
+5-gram  | 191.60
+RNN LM  | 159.43 
+GRU LM  | 133.42 
+LSTM LM | 132.19 
 
 ### Generating samples
 
 These are examples of random sentences generated using the autoregressive LSTM LM model with an exponential sampler:
 
 > I SHOULD HAVE DONE THAT IT WAS EVEN THE VOICE OF THE COURTESY OF THE MAN HE WOULD ALWAYS TELL ME HOW I HAVE BEEN PAY FOR THE LETTER
+
 > WHEN THE OTHERS CAME OUT OF THE HAMMER HE HEARD THE DAWN OF THE STORY OF THE PALACE
+
 > AND WHEN THE FIRST THING WAS OVER THE LEFT WAS A SMALL APARTMENT OF THE SMALL AS THE SUPPOSED OF THE LAMP WAS A LARGE PLACE OF THE DARK BROWN THE STONE WAS A GREAT AND FINE TENANT
+
 > AND HIS WIFE HAS BEEN A GREAT DEAL BETTER THAN HER MOTHER NOW SHE IS THE BEST OF ALL HIS HEART AND DEATH
+
 > AND TELL ME SAID I TO BE THERE IN THE HOUSE OF A MAN WHO IS A WOMAN OF YOUR CHARACTER
+
 > IT IS THE NEAREST POINT OF POLITICS TO ITS OWN TASKS
+
 > THAT THE DUST WHICH WAS TO HOLD UP THE HILL
+
 > THE TALL KING FELT HER HIGH AND HAPPY MOTHER AND HER MOTHER WAS SO UNHAPPY THAT HE MAY COME TO THE WORLD
+
 > BUT THE FOOTSTEPS WERE TAKEN AND THEN THEY WENT ON THE SALMON TOOK THE GOLDEN BALL INTO THE SEA
+
 > FOR THE LAST TIME HE SAW THE VERY CREW OF THE WHITE HOUSE
 
