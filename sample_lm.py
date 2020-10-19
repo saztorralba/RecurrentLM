@@ -6,11 +6,8 @@ import numpy as np
 import argparse
 
 from utils.rnnlm_func import sample_model 
-from utils.lm_func import read_vocabulary
 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -18,11 +15,7 @@ warnings.filterwarnings('ignore')
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Test the simple recurrent LM by generating sentences sampled from the LM')
     parser.add_argument('--model_file', metavar='FILE', default=None, help='Full path to trained serialised model')
-    parser.add_argument('--vocabulary',metavar='FILE',default=None,help='Full path to a file containing the vocabulary words')
     parser.add_argument('--num_sequences',type=int,default=10,help='Number of sentences to generate')
-    parser.add_argument('--start_token',type=str,default='<s>',help='Word token used at the beginning of a sentence')
-    parser.add_argument('--end_token',type=str,default='<\s>',help='Word token used at the end of a sentence')
-    parser.add_argument('--unk_token',type=str,default='<UNK>',help='Word token used for out-of-vocabulary words')
     parser.add_argument('--verbose',type=int,default=0,help='Verbosity level (0: global results, 1: sentence results, 2: word results)')
     parser.add_argument('--seed',type=int,default=0,help='Seed to initialise the pseudo-random generators')
     parser.add_argument('--topk',type=int,default=100,help='Number words with the highest probability from which to draw the next word')
@@ -34,21 +27,23 @@ def parse_arguments():
     return args
 
 def sample_lm(args):
+    #Perform initialisations
     args.debug = min(max(args.verbose,0),2)
-
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
-    vocab,num_words = read_vocabulary(args.vocabulary,args.start_token,args.end_token,args.unk_token)
-    vocab_list = {vocab[v]:v for v in vocab}
-    args.start_with = ' '.join([x if x in vocab else args.unk_token for x in args.start_with.strip().split()])
-
+    #Read model
     model = torch.load(args.model_file)
-    model = model.cpu()
+    args.vocab = model.vocab
+    args.vocab_list = {args.vocab[v]:v for v in args.vocab}
+    args.start_token, args.end_token, args.unk_token = (model.start_token, model.end_token, model.unk_token)
+    args.characters = model.characters
+    args.start_with = (list(args.start_with.strip()) if args.characters else args.start_with.strip().split())
+    args.start_with = [x if x in args.vocab else args.unk_token for x in args.start_with]
 
-    logprob,total = sample_model(model,vocab,vocab_list,num_words,args)
-
+    #Sample requires sentences
+    logprob,total = sample_model(model,args)
     ppl = math.pow(10.0,-logprob/total)
     print('file {0:s}: {1:d} sentences, {2:d} words'.format(args.model_file,args.num_sequences,total))
     print('logprob = {0:.2f}, ppl = {1:.2f}'.format(logprob,ppl))

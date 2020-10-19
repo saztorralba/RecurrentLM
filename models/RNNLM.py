@@ -4,27 +4,32 @@ import torch.nn as nn
 import sys
 
 class RNNLM(nn.Module):
-    def __init__(self,in_dim,embed_dim=512,hid_dim=512,n_layers=1,nonlinearity='relu'):
+    def __init__(self,vocab,embed_dim=512,hid_dim=512,n_layers=1,nonlinearity='relu',tokens=[],characters=False):
         
         super(RNNLM, self).__init__()
-        #base variables
-        self.in_dim = in_dim
+        #Base variables
+        self.vocab = vocab
+        self.in_dim = len(self.vocab)
+        self.start_token = tokens[0]
+        self.end_token = tokens[1]
+        self.unk_token = tokens[2]
+        self.characters = characters
         self.embed_dim = embed_dim
         self.hid_dim = hid_dim
         self.n_layers = n_layers
         self.nonlinearity=nonlinearity
         
-        #define the embedding layer
+        #Define the embedding layer
         self.embed = nn.Embedding(self.in_dim+1,self.embed_dim,padding_idx=self.in_dim)
-        #define the lstm layer
+        #Define the RNN layer
         self.rnn= nn.RNN(input_size=self.embed_dim,hidden_size=self.hid_dim,num_layers=n_layers,nonlinearity=self.nonlinearity.lower())
-        #define the output layer
+        #Define the output layer
         self.linear = nn.Linear(self.hid_dim,self.in_dim)
-        #define the softmax layer
+        #Define the softmax layer
         self.softmax = nn.LogSoftmax()
         
     def init_weights(self):
-        #randomly initialise all parameters
+        #Randomly initialise all parameters
         torch.nn.init.xavier_uniform_(self.embed.weight)
         for i in range(self.n_layers):
             torch.nn.init.xavier_uniform_(getattr(self.rnn,'weight_hh_l'+str(i)))
@@ -35,40 +40,44 @@ class RNNLM(nn.Module):
         torch.nn.init.uniform_(self.linear.bias)
     
     def forward(self, inputs, lengths):
-        #inputs is size (LxBx1)
-        #forward embedding layer
+        #Inputs are size (LxBx1)
+        #Forward embedding layer
         emb = self.embed(inputs)
-        #emb is (LxBxself.embed_dim)
+        #Embeddings are size (LxBxself.embed_dim)
 
-        #pack the sequences for LSTM
+        #Pack the sequences for RNN
         packed = torch.nn.utils.rnn.pack_padded_sequence(emb, lengths)
-        #forward the LSTM
+        #Forward the LSTM
         packed_rec, self.hidden = self.rnn(packed,self.hidden)
-        #unpack the sequences
+        #Unpack the sequences
         rec, _ = torch.nn.utils.rnn.pad_packed_sequence(packed_rec)
-        #rec is (LxBxself.hidden_size)
+        #Hidden outputs are (LxBxself.hidden_size)
         
-        #flatten for the output layer
+        #Flatten for the output layer
         flat_rec = rec.view(rec.size(0)*rec.size(1), rec.size(2))
-        #forward the output layer and the softmax
+        #Forward the output layer and the softmax
         flat_out = self.softmax(self.linear(flat_rec))
-        #unflatten the output
+        #Unflatten the output
         out = flat_out.view(inputs.size(0),inputs.size(1),flat_out.size(1))
-        #out is (LxBxself.in_dim)
+        #Outputs are size (LxBxself.in_dim)
         
         return out
     
     def init_hidden(self, bsz):
-        #initialise the LSTM state
+        #Initialise the hidden state
         weight = next(self.parameters())
         self.hidden = weight.new_zeros(self.n_layers, bsz, self.hid_dim)
 
     def detach_hidden(self):
+        #Detach the hidden state
         self.hidden=self.hidden.detach()
 
     def cpu_hidden(self):
+        #Set the hidden state to CPU
         self.hidden=self.hidden.detach().cpu()
 
     def cut_hidden(self,valid):
+        #Reduce the batch size in the hidden state
         self.hidden=self.hidden[:,0:valid,:].contiguous()
+
 
