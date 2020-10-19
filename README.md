@@ -39,9 +39,9 @@ It will generate as many sentences as given by ``--num_sequences``, and will rep
 
 The code has been tested in the following environment, with the main following dependencies and versions:
 
-* python --> 3.8.3
+* python --> 3.6.7 & 3.8.3
 * torch --> 1.4.0
-* numpy --> 1.19.1
+* numpy --> 1.19.2
 
 ## Evaluation
 
