@@ -1,4 +1,4 @@
-# recurrent-lm
+# RecurrentLM
 ## Description
 Code and scripts for training, testing and sampling auto-regressive recurrent language models on PyTorch with RNN, GRU and LSTM layers.
 
