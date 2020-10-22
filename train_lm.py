@@ -26,7 +26,6 @@ def parse_arguments():
     parser.add_argument('--cv_percentage',default=0.1,type=float,help='Amount of data to use for cross-validation')
     parser.add_argument('--epochs',type=int,default=10,help='Number of epochs to train')
     parser.add_argument('--batch_size',type=int,default=32,help='Batch size')
-    parser.add_argument('--val_batch_size',type=int,default=100,help='Batch size for validation')
     parser.add_argument('--embedding_size',type=int,default=128,help='Size of the embedding layer')
     parser.add_argument('--hidden_size',type=int,default=128,help='Size of the hidden recurrent layers')
     parser.add_argument('--num_layers',type=int,default=1,help='Number of recurrent layers')
@@ -39,49 +38,58 @@ def parse_arguments():
     parser.add_argument('--start_token',type=str,default='<s>',help='Word token used at the beginning of a sentence')
     parser.add_argument('--end_token',type=str,default='<\s>',help='Word token used at the end of a sentence')
     parser.add_argument('--unk_token',type=str,default='<UNK>',help='Word token used for out-of-vocabulary words')
+    parser.add_argument('--verbose',default=0,type=int,choices=[0,1,2],help='Verbosity level (0, 1 or 2)')
     args = parser.parse_args()
+    args = vars(args)
     return args
 
 def train_lm(args):
     #Initialisations
-    random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    torch.cuda.manual_seed(args.seed)
+    random.seed(args['seed'])
+    torch.manual_seed(args['seed'])
+    torch.cuda.manual_seed(args['seed'])
     torch.backends.cudnn.deterministic = True
-    args.device = torch.device(('cuda:0' if torch.cuda.is_available() else 'cpu'))
+    args['device'] = torch.device(('cuda:0' if torch.cuda.is_available() else 'cpu'))
 
     #Read vocabulary, sentences and load data
-    args.vocab,args.characters = read_vocabulary(args)
-    args.num_seq,args.max_words = count_sequences(args)
-    trainset,validset = load_data(args, True)
-    print('Number of training sequences: {0:d}'.format(trainset.shape[1]))
-    print('Number of cross-validaton sequences: {0:d}'.format(validset.shape[1]))
+    args['vocab'],args['characters'] = read_vocabulary(**args)
+    args['num_seq'],args['max_words'] = count_sequences(**args)
+    trainset,validset = load_data(True, **args)
+    if args['verbose'] >= 1:
+        print('Number of training sequences: {0:d}'.format(trainset.shape[1]))
+        print('Number of cross-validaton sequences: {0:d}'.format(validset.shape[1]))
 
     #Create model, optimiser and criterion
-    model = build_model(args).to(args.device) 
-    optimizer = torch.optim.SGD(model.parameters(),lr=args.learning_rate)
-    criterion = nn.NLLLoss(reduction='none').to(args.device)
-    print('\nModel:')
-    print(model)
-    print('\n')
+    model = build_model(**args).to(args['device']) 
+    optimizer = torch.optim.SGD(model.parameters(),lr=args['learning_rate'])
+    criterion = nn.NLLLoss(reduction='none').to(args['device'])
+    if args['verbose'] == 2:
+        print('\nModel:')
+        print(model)
+        print('\n')
 
     #Train epochs
-    for ep in range(1,args.epochs+1):
-        print('Epoch {0:d} of {1:d}'.format(ep,args.epochs))
-        train_model(trainset,model,optimizer,criterion,args)
-        ppl = validate_model(validset,model,args)
+    for ep in range(1,args['epochs']+1):
+        if args['verbose'] == 2:
+            print('Epoch {0:d} of {1:d}'.format(ep,args['epochs']))
+        loss = train_model(trainset,model,optimizer,criterion,**args)
+        ppl = validate_model(validset,model,**args)
+        if args['verbose'] == 1:
+            print('Epoch {0:d} of {1:d}. Training loss: {2:.2f}, cross-validation perplexity: {3:.2f}'.format(ep,args['epochs'],loss,ppl))
 
         #Save intermediate models
-        nfolder = os.path.dirname(args.output_file)
+        nfolder = os.path.dirname(args['output_file'])
         nfile = nfolder+'/intermediate/model_epoch{0:02d}_ppl{1:0.2f}.pytorch'.format(ep,ppl)
         make_folder_for_file(nfile)
         torch.save(model,nfile)
+    if args['verbose'] == 0:
+        print('Final training loss: {0:.2f}, cross-validation accuracy: {1:.2f}%'.format(loss,acc))
 
     #Save final models
     model.cpu_hidden()
     model = model.cpu().eval()
-    make_folder_for_file(args.output_file)
-    torch.save(model,args.output_file)
+    make_folder_for_file(args['output_file'])
+    torch.save(model,args['output_file'])
 
 if __name__ == '__main__':
     args = parse_arguments()
