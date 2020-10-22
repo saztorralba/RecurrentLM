@@ -62,7 +62,7 @@ def count_sequences(**kwargs):
     max_words = 0
     num_seq = 0
     lines = [line for line in open(kwargs['input_file'])]
-    for line in tqdm(lines,desc='Reading input sentences'):
+    for line in tqdm(lines,desc='Reading input sentences',disable=(kwargs['verbose']<2)):
         if kwargs['characters']:
             words = list(line.strip())
         else:
