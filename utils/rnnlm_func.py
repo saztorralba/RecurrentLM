@@ -11,11 +11,12 @@ from models.RNNLM import RNNLM
 from models.GRULM import GRULM
 
 #Load data in memory from an input text (when cv is True, perform cv split)
-def load_data(cv=False, **kwargs):
+def load_data(lines = None, cv = False, **kwargs):
     dataset = len(kwargs['vocab'])*torch.ones((kwargs['max_words'],kwargs['num_seq']),dtype=torch.long)
     idx = 0
     utoken_value = kwargs['vocab'][kwargs['unk_token']]
-    lines = [line for line in open(kwargs['input_file'])]
+    if lines is None:
+        lines = [line for line in open(kwargs['input_file'])]
     for line in tqdm(lines,desc='Allocating data memory',disable=(kwargs['verbose']<2)):
         words = (list(line.strip()) if kwargs['characters'] else line.strip().split())
         if len(words)>0:
