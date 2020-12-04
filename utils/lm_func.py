@@ -1,11 +1,14 @@
 from tqdm import tqdm
 
 #Function to read a vocabulary file and add special tokens
-def read_vocabulary(**kwargs):
-    if kwargs['vocabulary'] == None:
-        return read_characters(**kwargs)
+def read_vocabulary(lines,**kwargs):
     vocab = dict()
     num_words = 0
+    if lines is None:
+        if kwargs['vocabulary'] == None:
+            return read_characters(**kwargs)
+        else:
+            lines = [line for line in open(kwargs['vocabulary'])]
     with open(kwargs['vocabulary']) as f:
         for line in f:
             word = line.strip().split()[0]
@@ -19,16 +22,17 @@ def read_vocabulary(**kwargs):
     return vocab, False
 
 #Function to get a vocabulary from all characters in input text
-def read_characters(**kwargs):
+def read_characters(lines=None,**kwargs):
     vocab = dict()
     num_words = 0
-    with open(kwargs['input_file']) as f:
-        for line in f:
-            line = line.strip()
-            for char in line:
-                if char not in vocab:
-                    vocab[char] = num_words
-                    num_words+=1
+    if lines is None:
+        lines = [line for line in open(kwargs['input_file'])]
+    for line in lines:
+        line = line.strip()
+        for char in line:
+            if char not in vocab:
+                vocab[char] = num_words
+                num_words+=1
     for word in [kwargs['start_token'],kwargs['end_token'],kwargs['unk_token']]:
         if word not in vocab:
             vocab[word] = num_words
@@ -36,10 +40,11 @@ def read_characters(**kwargs):
     return vocab, True
 
 #Read sentences, with and without special tokens
-def read_sentences(**kwargs):
+def read_sentences(lines=None,**kwargs):
     orig_sent = list()
     sent = list()
-    lines = [line for line in open(kwargs['input_file'])]
+    if lines is None:
+        lines = [line for line in open(kwargs['input_file'])]
     for line in tqdm(lines,desc='Reading input sentences',disable=(kwargs['verbose']<2)):
         if kwargs['characters']:
             words = list(line.strip())
@@ -58,10 +63,11 @@ def read_sentences(**kwargs):
     return orig_sent, sent
 
 #Obtain number of valid sentences and maximum length of them
-def count_sequences(**kwargs):
+def count_sequences(lines=None,**kwargs):
     max_words = 0
     num_seq = 0
-    lines = [line for line in open(kwargs['input_file'])]
+    if lines is None:
+        lines = [line for line in open(kwargs['input_file'])]
     for line in tqdm(lines,desc='Reading input sentences',disable=(kwargs['verbose']<2)):
         if kwargs['characters']:
             words = list(line.strip())
