@@ -9,12 +9,11 @@ def read_vocabulary(lines,**kwargs):
             return read_characters(**kwargs)
         else:
             lines = [line for line in open(kwargs['vocabulary'])]
-    with open(kwargs['vocabulary']) as f:
-        for line in f:
-            word = line.strip().split()[0]
-            if word not in vocab:
-                vocab[word] = num_words
-                num_words += 1
+    for line in lines:
+        word = line.strip().split()[0]
+        if word not in vocab:
+            vocab[word] = num_words
+            num_words += 1
     for word in [kwargs['start_token'],kwargs['end_token'],kwargs['unk_token']]:
         if word not in vocab:
             vocab[word] = num_words
