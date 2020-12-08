@@ -34,7 +34,7 @@ def test_lm(args):
     orig_sent,sent = read_sentences(**args)
     args['num_seq'] = len(sent)
     args['max_words'] = max([len(s) for s in sent])
-    testset = load_data(False, **args)
+    testset = load_data(cv=False, **args)
 
     #Compute perplexities
     logprob,total = test_model(testset,model,orig_sent,sent,**args)

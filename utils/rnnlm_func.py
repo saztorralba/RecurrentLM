@@ -62,9 +62,11 @@ def train_model(trainset,model,optimizer,criterion,**kwargs):
         model = model.train()
         for b in range(nbatches):
             #Data batch
-            X = trainset[:,b*kwargs['batch_size']:min(trainlen,(b+1)*kwargs['batch_size'])].clone().long().to(kwargs['device'])
+            X = trainset[:,b*kwargs['batch_size']:min(trainlen,(b+1)*kwargs['batch_size'])].clone().long()
             mask = torch.clamp(len(kwargs['vocab'])-X,max=1)
             seq_length = torch.sum(mask,dim=0)
+            X = X.to(kwargs['device'])
+            mask = mask.to(kwargs['device'])
             #Reorder the batch by sequence length
             X,Y,mask,ordered_seq_length,_ = process_batch(X,mask,seq_length)
             model.init_hidden(X.size(1))
@@ -110,9 +112,11 @@ def validate_model(validset,model,**kwargs):
             model = model.eval()
             for b in range(nbatches):
                 #Data batch
-                X = validset[:,b*kwargs['batch_size']:min(validlen,(b+1)*kwargs['batch_size'])].clone().long().to(kwargs['device'])
+                X = validset[:,b*kwargs['batch_size']:min(validlen,(b+1)*kwargs['batch_size'])].clone().long()
                 mask = torch.clamp(len(kwargs['vocab'])-X,max=1)
                 seq_length = torch.sum(mask,dim=0)
+                X = X.to(kwargs['device'])
+                mask = mask.to(kwargs['device'])
                 #Reorder the batch by sequence length
                 X,Y,mask,ordered_seq_length,_ = process_batch(X,mask,seq_length)
                 #Propagate forward

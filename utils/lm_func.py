@@ -1,7 +1,7 @@
 from tqdm import tqdm
 
 #Function to read a vocabulary file and add special tokens
-def read_vocabulary(lines,**kwargs):
+def read_vocabulary(lines=None,**kwargs):
     vocab = dict()
     num_words = 0
     if lines is None:

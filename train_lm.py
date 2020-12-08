@@ -54,7 +54,7 @@ def train_lm(args):
     #Read vocabulary, sentences and load data
     args['vocab'],args['characters'] = read_vocabulary(**args)
     args['num_seq'],args['max_words'] = count_sequences(**args)
-    trainset,validset = load_data(True, **args)
+    trainset,validset = load_data(cv=True, **args)
     if args['verbose'] >= 1:
         print('Number of training sequences: {0:d}'.format(trainset.shape[1]))
         print('Number of cross-validaton sequences: {0:d}'.format(validset.shape[1]))

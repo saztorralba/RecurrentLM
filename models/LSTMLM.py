@@ -25,7 +25,7 @@ class LSTMLM(nn.Module):
         #Define the output layer
         self.linear = nn.Linear(self.hid_dim,self.in_dim)
         #Define the softmax layer
-        self.softmax = nn.LogSoftmax()
+        self.softmax = nn.LogSoftmax(dim=1)
         
     def init_weights(self):
         #Randomly initialise all parameters
