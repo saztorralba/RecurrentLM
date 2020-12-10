@@ -25,9 +25,10 @@ def load_data(lines = None, cv = False, **kwargs):
             if words[-1] != kwargs['end_token']:
                 words.append(kwargs['end_token'])
             if len(words) <= kwargs['max_length']:
-                for jdx,word in enumerate(words):
-                    dataset[jdx,idx] = kwargs['vocab'].get(word,utoken_value)
-                idx += 1
+                if 'min_length' in kwargs and nwords>=kwargs['min_length']:
+                    for jdx,word in enumerate(words):
+                        dataset[jdx,idx] = kwargs['vocab'].get(word,utoken_value)
+                    idx += 1
 
     if cv == False:
         return dataset
