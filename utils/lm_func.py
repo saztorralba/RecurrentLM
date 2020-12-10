@@ -75,8 +75,9 @@ def count_sequences(lines=None,**kwargs):
         if len(words)>0:
             nwords = len(words)+int(words[0]!=kwargs['start_token'])+int(words[-1]!=kwargs['end_token'])
             if nwords <= kwargs['max_length']:
-                if nwords > max_words:
-                    max_words = nwords
-                num_seq += 1
+                if 'min_length' in kwargs and nwords>=kwargs['min_length']:
+                    if nwords > max_words:
+                        max_words = nwords
+                    num_seq += 1
     return num_seq, max_words
 
