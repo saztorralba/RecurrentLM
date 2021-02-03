@@ -206,6 +206,9 @@ def sample_model(model,**kwargs):
                 posteriors = posteriors[0,0,:]
                 #Get linear posteriors probabilities
                 posteriors = torch.pow(10.0,posteriors/math.log(10.0))
+                #Make end probability zero if not reached minimum sample length
+                if 'min_sample_length' in kwargs and len(words)<kwargs['min_sample_length']:
+                    posteriors[kwargs['vocab'][kwargs['end_token']]] = 0
                 #Evaluate if the probability of the end of sentence is higher than current threshold
                 if posteriors[kwargs['vocab'][kwargs['end_token']]] >= end_prob:
                     words.append(kwargs['end_token'])
