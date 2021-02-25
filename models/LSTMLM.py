@@ -62,10 +62,14 @@ class LSTMLM(nn.Module):
         
         return out
     
-    def init_hidden(self, bsz):
+    def init_hidden(self, bsz=None, hidden=None):
         #Initialise the hidden state
-        weight = next(self.parameters())
-        self.hidden = (weight.new_zeros(self.n_layers, bsz, self.hid_dim),weight.new_zeros(self.n_layers, bsz, self.hid_dim))
+        if hidden is not None:
+            weight = next(self.parameters())
+            self.hidden = (hidden,weight.new_zeros(self.n_layers, hidden.shape[1], self.hid_dim))
+        elif bsz is not None:
+            weight = next(self.parameters())
+            self.hidden = (weight.new_zeros(self.n_layers, bsz, self.hid_dim),weight.new_zeros(self.n_layers, bsz, self.hid_dim))
 
     def detach_hidden(self):
         #Detach the hidden state
